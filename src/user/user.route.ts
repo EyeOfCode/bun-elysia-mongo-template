@@ -1,29 +1,28 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import UserController from "./user.controller";
+import {
+  CreateUserValidate,
+  DeleteUserValidate,
+  GetUserListValidate,
+  GetUserValidate,
+  UpdateUserValidate,
+} from "./user.validate";
 
 export const UserRouter = (app: Elysia) => {
   const userController = new UserController();
 
   app.group("/user", (app) =>
     app
-      .get("/", () => userController.getList())
-      .post("/", ({ body }) => userController.create(body.name), {
-        body: t.Object({
-          name: t.String(),
-        }),
-      })
       .get(
-        "/:id",
-        ({ params: { id } }: { params: { id: string } }) =>
-          userController.getById(id),
-        {
-          params: t.Object({
-            id: t.String(),
-          }),
-          response: t.Object({
-            id: t.String(),
-          }),
-        }
+        "/",
+        () => {
+          return userController.getList();
+        },
+        GetUserListValidate
       )
+      .post("/", (req) => userController.create(req), CreateUserValidate)
+      .get("/:id", (req) => userController.getById(req), GetUserValidate)
+      .put("/:id", (req) => userController.update(req), UpdateUserValidate)
+      .delete("/:id", (req) => userController.delete(req), DeleteUserValidate)
   );
 };

@@ -5,6 +5,12 @@ To start the development server run:
 bun run dev
 ```
 
+## feature
+- crud
+- validate req
+- bearer
+- swagger
+
 ## Ref
 - https://bun.sh/
 - https://elysiajs.com/

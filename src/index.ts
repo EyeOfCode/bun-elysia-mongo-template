@@ -1,15 +1,52 @@
 import { Elysia } from "elysia";
-import { UserRouter } from "./user/user.route";
 import swagger from "@elysiajs/swagger";
 import * as mongoose from "mongoose";
+import { bearer } from "@elysiajs/bearer";
+import jwt from "@elysiajs/jwt";
+import { cookie } from "@elysiajs/cookie";
+
+import { UserRouter } from "./user/user.route";
+import { AuthRouter } from "./auth/auth.route";
+import { currentAuth } from "../middleware/auth";
 
 const port = Bun.env.PORT || 8000;
 const app = new Elysia();
 
-await mongoose.connect("mongodb://0.0.0.0:27017/mongoose-bun");
+await mongoose.connect(
+  Bun.env.MONGO_URI || "mongodb://localhost:27017/elysia-template-db"
+);
 
-app.use(swagger());
+app.use(
+  swagger({
+    documentation: {
+      info: {
+        title: "Elysia Template Documentation",
+        version: "1.0.0",
+      },
+      // components: {
+      //   securitySchemes: {
+      //     bearerAuth: {
+      //       type: "http",
+      //       scheme: "bearer",
+      //       bearerFormat: "JWT",
+      //     },
+      //   },
+      // },
+    },
+  })
+);
+app.use(bearer());
+app.use(
+  jwt({
+    name: "jwt",
+    secret: Bun.env.JWT_SECRET || "secret",
+    exp: Bun.env.JWT_EXP || "7d",
+  })
+);
+app.use(currentAuth);
+app.use(cookie());
 
+AuthRouter(app);
 UserRouter(app);
 
 app.listen(port);
